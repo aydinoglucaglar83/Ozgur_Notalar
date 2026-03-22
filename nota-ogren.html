@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nota Öğreniyorum 🎵</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fef9f0;
+    --primary: #f4762a;
+    --secondary: #5b4fcf;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --yellow: #f1c40f;
+    --staff-color: #2c2c54;
+    --white-key: #fffef7;
+    --black-key: #2c2c54;
+    --note-color: #f4762a;
+    --shadow: 0 8px 32px rgba(91,79,207,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(244,118,42,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 90% 80%, rgba(91,79,207,0.08) 0%, transparent 50%);
+  }
+
+  h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 2.4rem;
+    color: var(--secondary);
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  h1 span { color: var(--primary); }
+
+  .subtitle {
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  /* Mod seçimi */
+  .mode-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    background: #eee;
+    border-radius: 40px;
+    padding: 4px;
+  }
+  .mode-tab {
+    padding: 8px 22px;
+    border-radius: 36px;
+    border: none;
+    font-family: 'Baloo 2', cursive;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #777;
+    transition: all 0.25s;
+  }
+  .mode-tab.active {
+    background: var(--secondary);
+    color: white;
+    box-shadow: 0 3px 12px rgba(91,79,207,0.3);
+  }
+
+  /* Skor */
+  .scoreboard {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .score-box {
+    background: white;
+    border-radius: 16px;
+    padding: 10px 22px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .score-box .val {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--secondary);
+  }
+  .score-box .lbl { font-size: 0.75rem; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .score-box.correct .val { color: var(--green); }
+  .score-box.wrong .val { color: var(--red); }
+
+  /* Ana kart */
+  .card {
+    background: white;
+    border-radius: 28px;
+    padding: 28px 32px 24px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 20px;
+  }
+
+  /* Porte (Staff) */
+  .staff-wrap {
+    position: relative;
+    height: 140px;
+    margin: 10px auto 18px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  svg.staff-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* Soru etiketi */
+  .question-label {
+    text-align: center;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 16px;
+  }
+
+  /* Cevap butonları */
+  .answer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .ans-btn {
+    padding: 14px 6px;
+    border-radius: 14px;
+    border: 2.5px solid #e8e8e8;
+    background: white;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--secondary);
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.5px;
+  }
+  .ans-btn:hover:not(:disabled) {
+    border-color: var(--secondary);
+    background: #f3f1ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(91,79,207,0.15);
+  }
+  .ans-btn.correct-ans {
+    background: #e8f8f0;
+    border-color: var(--green);
+    color: var(--green);
+    transform: scale(1.07);
+  }
+  .ans-btn.wrong-ans {
+    background: #fdecea;
+    border-color: var(--red);
+    color: var(--red);
+    animation: shake 0.35s;
+  }
+  .ans-btn:disabled { cursor: default; }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+  }
+
+  /* Feedback */
+  .feedback {
+    text-align: center;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.5rem;
+    font-weight: 700;
+    min-height: 2.2rem;
+    margin-top: 16px;
+    transition: all 0.2s;
+  }
+  .feedback.ok { color: var(--green); }
+  .feedback.bad { color: var(--red); }
+
+  /* Piano keyboard mode */
+  .piano-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0 20px;
+    position: relative;
+    height: 110px;
+    user-select: none;
+  }
+  .piano-keys {
+    position: relative;
+    display: flex;
+  }
+  .wkey {
+    width: 44px;
+    height: 110px;
+    background: var(--white-key);
+    border: 1.5px solid #ccc;
+    border-radius: 0 0 8px 8px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.1s;
+    z-index: 1;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    font-family: 'Baloo 2', cursive;
+    font-size: 0.75rem;
+    color: #bbb;
+    font-weight: 700;
+  }
+  .wkey:hover { background: #f5f0ff; }
+  .wkey.pressed { background: #ddd; transform: translateY(2px); }
+  .wkey.highlight { background: #fff0e0; border-color: var(--primary); color: var(--primary); }
+  .bkey {
+    width: 28px;
+    height: 68px;
+    background: var(--black-key);
+    border-radius: 0 0 6px 6px;
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    cursor: pointer;
+    transition: background 0.12s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.35);
+  }
+  .bkey:hover { background: #444; }
+  .bkey.pressed { background: #666; }
+
+  /* Bilgi paneli */
+  .info-card {
+    background: linear-gradient(135deg, #f3f1ff 0%, #e8f8f0 100%);
+    border-radius: 20px;
+    padding: 20px 24px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 20px;
+  }
+  .info-card h3 {
+    font-family: 'Baloo 2', cursive;
+    color: var(--secondary);
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+  }
+  .note-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .note-chip {
+    background: white;
+    border-radius: 10px;
+    padding: 8px 4px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .note-chip .tr { font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 700; color: var(--secondary); }
+  .note-chip .en { font-size: 0.7rem; color: #aaa; }
+
+  /* Next button */
+  .next-btn {
+    display: block;
+    margin: 0 auto;
+    padding: 12px 36px;
+    border-radius: 40px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(244,118,42,0.35);
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(244,118,42,0.45); }
+
+  /* Clef */
+  .download-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(91,79,207,0.35);
+    transition: all 0.2s;
+    z-index: 99;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .download-btn:hover { transform: translateY(-2px); }
+
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: 580px;
+    background: #eee;
+    border-radius: 20px;
+    height: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 20px;
+    transition: width 0.4s ease;
+  }
+
+  /* treble clef unicode fallback */
+  .clef-symbol { font-size: 3rem; line-height: 1; }
+</style>
+</head>
+<body>
+
+<h1><span>🎵</span> Nota Öğreniyorum</h1>
+<p class="subtitle">Portedeki notayı bul ve piyano tuşuna bas!</p>
+
+<div class="mode-tabs">
+  <button class="mode-tab active" onclick="setMode('quiz')">📝 Sınav Modu</button>
+  <button class="mode-tab" onclick="setMode('learn')">📚 Öğrenme Modu</button>
+</div>
+
+<div class="scoreboard">
+  <div class="score-box correct">
+    <div class="val" id="scoreCorrect">0</div>
+    <div class="lbl">✅ Doğru</div>
+  </div>
+  <div class="score-box wrong">
+    <div class="val" id="scoreWrong">0</div>
+    <div class="lbl">❌ Yanlış</div>
+  </div>
+  <div class="score-box">
+    <div class="val" id="scoreStreak">0🔥</div>
+    <div class="lbl">Seri</div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progressBar" style="width:0%"></div>
+</div>
+
+<!-- Ana Quiz Kartı -->
+<div class="card" id="quizCard">
+  <div class="question-label" id="questionLabel">Bu nota hangisi?</div>
+  
+  <div class="staff-wrap">
+    <svg class="staff-svg" id="staffSvg" viewBox="0 0 480 140" preserveAspectRatio="xMidYMid meet">
+      <!-- Porte çizgileri -->
+      <g id="staffLines"></g>
+      <!-- Nota -->
+      <g id="noteGroup"></g>
+    </svg>
+  </div>
+
+  <!-- Buton cevaplar -->
+  <div class="answer-grid" id="answerGrid"></div>
+
+  <div class="feedback" id="feedback"></div>
+</div>
+
+<button class="next-btn" id="nextBtn" onclick="nextQuestion()" style="display:none">Sonraki Nota →</button>
+
+<!-- Öğrenme kartı (nota isim tablosu) -->
+<div class="info-card" id="infoCard">
+  <h3>🎹 Notalar ve Karşılıkları</h3>
+  <div class="note-grid" id="noteGrid"></div>
+</div>
+
+<a class="download-btn" href="nota-ogren.html" download="nota-ogren.html" id="dlBtn">⬇️ İndir</a>
+
+<script>
+// ─── Nota tanımları ────────────────────────────────────────────
+// Treble clef, 5 çizgili porte
+// Çizgi 1 (en alt) = Mi4, boşluklar ve çizgiler yukarı çıkar
+// Her birim = yarım ton adımı (tam çizgi/boşluk)
+// y pozisyonu: merkez çizgi (B4/Si4) = 70, her adım = 10px
+
+const NOTES = [
+  { name: 'Do', octave: 4, eng: 'C4',  staffStep: -2, ledger: true  }, // Do altçizgi
+  { name: 'Re', octave: 4, eng: 'D4',  staffStep: -1, ledger: false },
+  { name: 'Mi', octave: 4, eng: 'E4',  staffStep:  0, ledger: false }, // 1. çizgi
+  { name: 'Fa', octave: 4, eng: 'F4',  staffStep:  1, ledger: false },
+  { name: 'Sol',octave: 4, eng: 'G4',  staffStep:  2, ledger: false }, // 2. çizgi
+  { name: 'La', octave: 4, eng: 'A4',  staffStep:  3, ledger: false },
+  { name: 'Si', octave: 4, eng: 'B4',  staffStep:  4, ledger: false }, // 3. çizgi
+  { name: 'Do', octave: 5, eng: 'C5',  staffStep:  5, ledger: false },
+  { name: 'Re', octave: 5, eng: 'D5',  staffStep:  6, ledger: false }, // 4. çizgi
+  { name: 'Mi', octave: 5, eng: 'E5',  staffStep:  7, ledger: false },
+  { name: 'Fa', octave: 5, eng: 'F5',  staffStep:  8, ledger: false }, // 5. çizgi
+  { name: 'Sol',octave: 5, eng: 'G5',  staffStep:  9, ledger: false },
+  { name: 'La', octave: 5, eng: 'A5',  staffStep: 10, ledger: false },
+];
+
+// Porte: Mi4=step0 → y = 110; her step yukarı = -10px
+function stepToY(step) {
+  return 110 - step * 10;
+}
+
+// Porte çizgileri: step 0,2,4,6,8 → Mi4, Sol4, Si4, Re5, Fa5
+const LINE_STEPS = [0, 2, 4, 6, 8];
+
+// ─── State ─────────────────────────────────────────────────────
+let mode = 'quiz';
+let currentNote = null;
+let answered = false;
+let correct = 0, wrong = 0, streak = 0;
+let totalQ = 0;
+
+// ─── Init ──────────────────────────────────────────────────────
+buildNoteGrid();
+nextQuestion();
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && m==='quiz') || (i===1 && m==='learn'));
+  });
+  document.getElementById('infoCard').style.display = m === 'learn' ? 'block' : 'block';
+  nextQuestion();
+}
+
+// ─── Nota grid (öğrenme tablosu) ─────────────────────────────
+function buildNoteGrid() {
+  const uniqueNames = ['Do','Re','Mi','Fa','Sol','La','Si'];
+  const engs = ['C','D','E','F','G','A','B'];
+  const el = document.getElementById('noteGrid');
+  el.innerHTML = uniqueNames.map((n, i) => `
+    <div class="note-chip">
+      <div class="tr">${n}</div>
+      <div class="en">${engs[i]}</div>
+    </div>
+  `).join('');
+}
+
+// ─── SVG Porte çiz ────────────────────────────────────────────
+function drawStaff(svgEl, noteObj) {
+  svgEl.innerHTML = '';
+
+  const W = 480, cx = 240;
+
+  // Sol anahtarı (treble clef) — Unicode fallback ile text
+  const clefText = document.createElementNS('http://www.w3.org/2000/svg','text');
+  clefText.setAttribute('x','30');
+  clefText.setAttribute('y', stepToY(4) + 18 + '');
+  clefText.setAttribute('font-size','88');
+  clefText.setAttribute('fill','#2c2c54');
+  clefText.setAttribute('font-family','serif');
+  clefText.textContent = '𝄞';
+  svgEl.appendChild(clefText);
+
+  // Porte çizgileri
+  LINE_STEPS.forEach(step => {
+    const y = stepToY(step);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1','20'); line.setAttribute('x2', W-20+'');
+    line.setAttribute('y1', y+''); line.setAttribute('y2', y+'');
+    line.setAttribute('stroke','#2c2c54');
+    line.setAttribute('stroke-width','2');
+    svgEl.appendChild(line);
+  });
+
+  if (!noteObj) return;
+
+  const noteStep = noteObj.staffStep;
+  const ny = stepToY(noteStep);
+
+  // Yardımcı çizgiler (Do4 altında vb)
+  if (noteStep < 0) {
+    for (let s = -2; s >= noteStep; s -= 2) {
+      const ly = stepToY(s);
+      const ll = document.createElementNS('http://www.w3.org/2000/svg','line');
+      ll.setAttribute('x1', cx-22+''); ll.setAttribute('x2', cx+22+'');
+      ll.setAttribute('y1', ly+''); ll.setAttribute('y2', ly+'');
+      ll.setAttribute('stroke','#2c2c54'); ll.setAttribute('stroke-width','2');
+      svgEl.appendChild(ll);
+    }
+  }
+  if (noteStep > 10) {
+    for (let s = 10; s <= noteStep; s += 2) {
+      const ly = stepToY(s);
+      const ll = document.createElementNS('http://www.w3.org/2000/svg','line');
+      ll.setAttribute('x1', cx-22+''); ll.setAttribute('x2', cx+22+'');
+      ll.setAttribute('y1', ly+''); ll.setAttribute('y2', ly+'');
+      ll.setAttribute('stroke','#2c2c54'); ll.setAttribute('stroke-width','2');
+      svgEl.appendChild(ll);
+    }
+  }
+
+  // Nota kafası (dolu daire = dörtlük nota)
+  const noteHead = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+  noteHead.setAttribute('cx', cx+'');
+  noteHead.setAttribute('cy', ny+'');
+  noteHead.setAttribute('rx','13');
+  noteHead.setAttribute('ry','10');
+  noteHead.setAttribute('fill','#f4762a');
+  noteHead.setAttribute('transform', `rotate(-15, ${cx}, ${ny})`);
+  svgEl.appendChild(noteHead);
+
+  // Nota sapı
+  const stemDir = noteStep < 4 ? -1 : 1; // aşağı/yukarı
+  const stemX = stemDir === -1 ? cx + 12 : cx - 12;
+  const stemY2 = ny + stemDir * 45;
+  const stem = document.createElementNS('http://www.w3.org/2000/svg','line');
+  stem.setAttribute('x1', stemX+''); stem.setAttribute('x2', stemX+'');
+  stem.setAttribute('y1', ny+''); stem.setAttribute('y2', stemY2+'');
+  stem.setAttribute('stroke','#f4762a'); stem.setAttribute('stroke-width','2.5');
+  svgEl.appendChild(stem);
+
+  // Öğrenme modunda nota adını göster
+  if (mode === 'learn') {
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x', (cx + 22)+'');
+    label.setAttribute('y', (ny + 5)+'');
+    label.setAttribute('font-size','16');
+    label.setAttribute('fill','#5b4fcf');
+    label.setAttribute('font-family','Baloo 2, cursive');
+    label.setAttribute('font-weight','700');
+    label.textContent = noteObj.name + (noteObj.octave === 5 ? '⁵' : '');
+    svgEl.appendChild(label);
+  }
+}
+
+// ─── Soru oluştur ─────────────────────────────────────────────
+function nextQuestion() {
+  answered = false;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('nextBtn').style.display = 'none';
+
+  // Rastgele nota seç
+  currentNote = NOTES[Math.floor(Math.random() * NOTES.length)];
+
+  const svg = document.getElementById('staffSvg');
+  drawStaff(svg, currentNote);
+
+  // Cevap seçenekleri
+  buildAnswers();
+
+  // Progress
+  totalQ++;
+  const pct = Math.min(100, ((correct+wrong) / Math.max(1, correct+wrong+1)) * 100);
+  document.getElementById('progressBar').style.width = (correct/(correct+wrong+0.001)*100) + '%';
+}
+
+function buildAnswers() {
+  const grid = document.getElementById('answerGrid');
+  
+  if (mode === 'learn') {
+    grid.innerHTML = '';
+    document.getElementById('questionLabel').textContent = '🎓 Öğrenme modunda notayı incele →';
+    document.getElementById('nextBtn').style.display = 'block';
+    return;
+  }
+
+  // 4 şık: doğru + 3 yanlış
+  const noteNames = ['Do','Re','Mi','Fa','Sol','La','Si'];
+  const correct_name = currentNote.name + (currentNote.octave === 5 ? ' (5)' : ' (4)');
+  
+  // Hem isim hem oktav bilgisi için seçenekler üret
+  let options = [{name: currentNote.name, octave: currentNote.octave, correct: true}];
+  let pool = NOTES.filter(n => !(n.name === currentNote.name && n.octave === currentNote.octave));
+  let shuffled = pool.sort(() => Math.random()-0.5).slice(0, 3);
+  shuffled.forEach(n => options.push({name: n.name, octave: n.octave, correct: false}));
+  options = options.sort(() => Math.random()-0.5);
+
+  document.getElementById('questionLabel').textContent = '🎵 Bu nota hangisi?';
+
+  grid.innerHTML = options.map(o => {
+    const label = o.name; // sadece isim göster, daha kolay
+    return `<button class="ans-btn" onclick="checkAnswer(this, ${o.correct})">${label}</button>`;
+  }).join('');
+}
+
+function checkAnswer(btn, isCorrect) {
+  if (answered) return;
+  answered = true;
+
+  const fb = document.getElementById('feedback');
+  const allBtns = document.querySelectorAll('.ans-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  // Doğru butonu yeşil yap
+  allBtns.forEach(b => {
+    if (b.onclick.toString().includes('true')) b.classList.add('correct-ans');
+  });
+
+  if (isCorrect) {
+    correct++;
+    streak++;
+    btn.classList.add('correct-ans');
+    fb.textContent = streak >= 3 ? `🔥 Harika! ${streak} doğru seri!` : '✅ Doğru! Aferin!';
+    fb.className = 'feedback ok';
+  } else {
+    wrong++;
+    streak = 0;
+    btn.classList.add('wrong-ans');
+    fb.textContent = `❌ Yanlış! Doğru cevap: ${currentNote.name}`;
+    fb.className = 'feedback bad';
+  }
+
+  updateScore();
+  document.getElementById('nextBtn').style.display = 'block';
+
+  // Öğrenme modunda notayı göster
+  if (mode !== 'learn') {
+    const svg = document.getElementById('staffSvg');
+    // Nota adını SVG'ye ekle
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x','260');
+    label.setAttribute('y', (stepToY(currentNote.staffStep) + 5)+'');
+    label.setAttribute('font-size','18');
+    label.setAttribute('fill', isCorrect ? '#27ae60' : '#e74c3c');
+    label.setAttribute('font-family','Baloo 2, cursive');
+    label.setAttribute('font-weight','700');
+    label.textContent = currentNote.name;
+    svg.appendChild(label);
+  }
+}
+
+function updateScore() {
+  document.getElementById('scoreCorrect').textContent = correct;
+  document.getElementById('scoreWrong').textContent = wrong;
+  document.getElementById('scoreStreak').textContent = streak + '🔥';
+  const total = correct + wrong;
+  document.getElementById('progressBar').style.width = total > 0 ? (correct/total*100)+'%' : '0%';
+}
+</script>
+
+<!-- Download button -->
+<script>
+  // Sayfanın kendi HTML'ini indir
+  document.getElementById('dlBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    const blob = new Blob([document.documentElement.outerHTML], {type: 'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'nota-ogren.html';
+    a.click();
+  });
+</script>
+</body>
+</html>
